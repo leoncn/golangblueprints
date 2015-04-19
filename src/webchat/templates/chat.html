@@ -9,10 +9,11 @@
 	<body>
 		<ul id="messages"></ul>
 		<form id="chatbox">
+			{{.UserData.name}}:</br>
 			<textarea></textarea>
 			<input type="submit" value="Send" />
 		</form>
-		<script src="/js/jquery-1.11.1.min.js">
+		<script src="http://{{.Host}}/js/jquery-1.11.1.min.js">
 		</script>
 		<script>
 			$(function(){

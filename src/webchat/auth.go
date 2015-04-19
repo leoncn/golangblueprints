@@ -48,7 +48,7 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 		}
 
 		loginUrl, err := provider.GetBeginAuthURL(nil, objx.New(map[string]interface{}{
-			"scope": "user, gist, repo",
+			"scope": "user",
 		}))
 
 		if err != nil {
@@ -78,8 +78,11 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 			log.Fatalln("Err when trying to get authed user ", provider, "-", err)
 		}
 
+		for k, v := range user.Data() {
+			log.Println(k, ":", v)
+		}
 		authCookieValue := objx.New(map[string]interface{}{
-			"name": user.Name(),
+			"name": user.Data()["login"],
 		}).MustBase64()
 
 		http.SetCookie(w, &http.Cookie{

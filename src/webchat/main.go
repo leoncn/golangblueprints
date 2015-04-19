@@ -5,6 +5,7 @@ import (
 	"flag"
 	"github.com/stretchr/gomniauth"
 	"github.com/stretchr/gomniauth/providers/github"
+	"github.com/stretchr/objx"
 	"github.com/stretchr/signature"
 	"log"
 	"net/http"
@@ -27,7 +28,13 @@ func (t *templateHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 				filepath.Join(t.fpath, t.filename)))
 	})
 
-	t.templ.Execute(w, r)
+	data := map[string]interface{}{
+		"Host": r.Host,
+	}
+	if authCookie, err := r.Cookie("auth"); err == nil {
+		data["UserData"] = objx.MustFromBase64(authCookie.Value)
+	}
+	t.templ.Execute(w, data)
 }
 func main() {
 	var addr = flag.String("addr", ":9090", "The address of the web server.")
