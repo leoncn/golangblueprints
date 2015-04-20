@@ -2,6 +2,7 @@ package main
 
 import (
 	"github.com/gorilla/websocket"
+	"github.com/stretchr/objx"
 	"log"
 	"net/http"
 	"os"
@@ -9,7 +10,7 @@ import (
 )
 
 type room struct {
-	forward chan []byte
+	forward chan *message
 
 	join, leave chan *client
 
@@ -28,10 +29,10 @@ func (r *room) run() {
 			close(client.send)
 			r.tracer.Trace("client " + client.socket.RemoteAddr().String() + " left.\n")
 		case msg := <-r.forward:
+			r.tracer.Trace("Recived message ", msg.Message, "\n")
 			for client := range r.clients {
 				select {
 				case client.send <- msg:
-					r.tracer.Trace("Forwarded message to " + client.socket.RemoteAddr().String() + "\n")
 				default:
 					delete(r.clients, client)
 					close(client.send)
@@ -59,10 +60,17 @@ func (r *room) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
+	authCookie, err := req.Cookie("auth")
+	if err != nil {
+		log.Fatal("Fail to get auth cookie:", err)
+		return
+	}
+
 	client := &client{
-		socket: socket,
-		send:   make(chan []byte, messageBufferSize),
-		room:   r,
+		socket:   socket,
+		send:     make(chan *message, messageBufferSize),
+		room:     r,
+		userData: objx.MustFromBase64(authCookie.Value),
 	}
 
 	r.join <- client
@@ -77,7 +85,7 @@ func (r *room) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 
 func newRoom() *room {
 	return &room{
-		forward: make(chan []byte),
+		forward: make(chan *message),
 		join:    make(chan *client),
 		leave:   make(chan *client),
 		clients: make(map[*client]bool),

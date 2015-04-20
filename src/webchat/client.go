@@ -3,20 +3,26 @@ package main
 import (
 	"github.com/gorilla/websocket"
 	"log"
+	"time"
 )
 
 type client struct {
-	socket *websocket.Conn
-	send   chan []byte
-	room   *room
+	socket   *websocket.Conn
+	send     chan *message
+	room     *room
+	userData map[string]interface{}
 }
 
 func (c *client) read() {
 	for {
-		if _, msg, err := c.socket.ReadMessage(); err == nil {
+		var msg *message
+		if err := c.socket.ReadJSON(&msg); err == nil {
 			c.room.forward <- msg
+			msg.Name = c.userData["name"].(string)
+			msg.When = time.Now()
 			c.room.tracer.Trace(" client " + c.socket.RemoteAddr().String() + " send message.\n")
 		} else {
+			log.Println(err)
 			break
 		}
 	}
@@ -25,7 +31,7 @@ func (c *client) read() {
 
 func (c *client) write() {
 	for msg := range c.send {
-		if err := c.socket.WriteMessage(websocket.TextMessage, msg); err != nil {
+		if err := c.socket.WriteJSON(msg); err != nil {
 			break
 		}
 		log.Println("Send msg to " + c.socket.RemoteAddr().String())

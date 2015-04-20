@@ -9,6 +9,7 @@ import (
 	"github.com/stretchr/signature"
 	"log"
 	"net/http"
+	"os"
 	"path/filepath"
 	"sync"
 	"text/template"
@@ -38,7 +39,12 @@ func (t *templateHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 }
 func main() {
 	var addr = flag.String("addr", ":9090", "The address of the web server.")
+	var http_proxy = flag.String("http_proxy", "", "The http proxy")
 	flag.Parse()
+	if *http_proxy != "" {
+		log.Println("Access notwork via http proxy ", *http_proxy)
+		os.Setenv("HTTP_PROXY", *http_proxy)
+	}
 
 	gomniauth.SetSecurityKey(signature.RandomKey(64))
 	gomniauth.WithProviders(github.New("8779ebdf5b25ab55e6d2", "eed0cbf3b35887b7093b8a4e76f207ad5b505697",
