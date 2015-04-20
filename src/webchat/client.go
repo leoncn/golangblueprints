@@ -17,13 +17,11 @@ func (c *client) read() {
 	for {
 		var msg *message
 		if err := c.socket.ReadJSON(&msg); err == nil {
-			c.room.forward <- msg
 			msg.Name = c.userData["name"].(string)
 			msg.When = time.Now()
+			msg.AvatarURL, _ = c.room.avatar.GetAvatarURL(c)
 
-			if url, ok := c.userData["avatar_url"].(string); ok {
-				msg.AvatarURL = url
-			}
+			c.room.forward <- msg
 
 			c.room.tracer.Trace(" client " + c.socket.RemoteAddr().String() + " send message.\n")
 		} else {
