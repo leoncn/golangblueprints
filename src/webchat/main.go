@@ -37,6 +37,7 @@ func (t *templateHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 	t.templ.Execute(w, data)
 }
+
 func main() {
 	var addr = flag.String("addr", ":9090", "The address of the web server.")
 	var http_proxy = flag.String("http_proxy", "", "The http proxy")
@@ -52,6 +53,17 @@ func main() {
 
 	r := newRoom()
 	http.Handle("/login", &templateHandler{fpath: "templates", filename: "login.html"})
+	http.HandleFunc("/logout", func(w http.ResponseWriter, r *http.Request) {
+		http.SetCookie(w, &http.Cookie{
+			Name:   "auth",
+			Value:  "",
+			Path:   "/",
+			MaxAge: -1,
+		})
+		w.Header()["Location"] = []string{"/chat"}
+		w.WriteHeader(http.StatusTemporaryRedirect)
+	})
+
 	http.HandleFunc("/auth/", loginHandler)
 	http.Handle("/chat", MustAuth(&templateHandler{fpath: "templates", filename: "chat.html"}))
 	http.Handle("/room", r)
