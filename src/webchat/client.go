@@ -20,6 +20,11 @@ func (c *client) read() {
 			c.room.forward <- msg
 			msg.Name = c.userData["name"].(string)
 			msg.When = time.Now()
+
+			if url, ok := c.userData["avatar_url"].(string); ok {
+				msg.AvatarURL = url
+			}
+
 			c.room.tracer.Trace(" client " + c.socket.RemoteAddr().String() + " send message.\n")
 		} else {
 			log.Println(err)
