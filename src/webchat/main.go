@@ -65,10 +65,29 @@ func main() {
 	})
 
 	http.HandleFunc("/auth/", loginHandler)
-	http.Handle("/chat", MustAuth(&templateHandler{fpath: "templates", filename: "chat.html"}))
-	http.Handle("/upload", MustAuth(&templateHandler{fpath: "templates", filename: "upload.thml"}))
+
+	http.Handle("/chat",
+		MustAuth(&templateHandler{
+			fpath:    "templates",
+			filename: "chat.html",
+		}))
+
+	http.Handle("/upload",
+		MustAuth(&templateHandler{
+			fpath:    "templates",
+			filename: "upload.html",
+		}))
+
+	http.HandleFunc("/uploader", uploaderHandler)
 	http.Handle("/room", r)
-	http.Handle("/js/", http.StripPrefix("/js/", http.FileServer(http.Dir("./js"))))
+
+	http.Handle("/js/",
+		http.StripPrefix("/js/",
+			http.FileServer(http.Dir("./js"))))
+
+	http.Handle("/avatars/",
+		http.StripPrefix("/avatars/",
+			http.FileServer(http.Dir("./avatars"))))
 	go r.run()
 
 	log.Println("HTTP listens " + *addr)
