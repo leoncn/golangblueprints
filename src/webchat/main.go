@@ -66,6 +66,7 @@ func main() {
 
 	http.HandleFunc("/auth/", loginHandler)
 	http.Handle("/chat", MustAuth(&templateHandler{fpath: "templates", filename: "chat.html"}))
+	http.Handle("/upload", MustAuth(&templateHandler{fpath: "templates", filename: "upload.thml"}))
 	http.Handle("/room", r)
 	http.Handle("/js/", http.StripPrefix("/js/", http.FileServer(http.Dir("./js"))))
 	go r.run()

@@ -1,8 +1,10 @@
 package main
 
 import (
+	"crypto/md5"
 	"fmt"
 	"github.com/stretchr/gomniauth"
+	"io"
 
 	"github.com/stretchr/objx"
 	"log"
@@ -81,8 +83,16 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 		for k, v := range user.Data() {
 			log.Println(k, ":", v)
 		}
+
+		usrName := user.Data()["login"]
+
+		m := md5.New()
+		io.WriteString(m, strings.ToLower(usrName))
+		usrId := fmt.Sprintf("%x", m.Sum(nil))
+
 		authCookieValue := objx.New(map[string]interface{}{
-			"name":       user.Data()["login"],
+			"usrid":      usrId,
+			"name":       usrName,
 			"avatar_url": user.Data()["avatar_url"],
 			"email":      "test@mail.com",
 		}).MustBase64()
