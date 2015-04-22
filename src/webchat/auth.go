@@ -4,9 +4,8 @@ import (
 	"crypto/md5"
 	"fmt"
 	"github.com/stretchr/gomniauth"
-	"io"
-
 	"github.com/stretchr/objx"
+	"io"
 	"log"
 	"net/http"
 	"strings"
@@ -91,10 +90,13 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 		usrId := fmt.Sprintf("%x", m.Sum(nil))
 
 		log.Println(usrId)
+		chatUser := &chatUser{user, usrId}
+
+		avatarurl, err := UseCachedAvatar.GetAvatarURL(chatUser)
 		authCookieValue := objx.New(map[string]interface{}{
 			"usrid":      usrId,
 			"name":       usrName,
-			"avatar_url": user.Data()["avatar_url"],
+			"avatar_url": avatarurl,
 			"email":      "test@mail.com",
 		}).MustBase64()
 

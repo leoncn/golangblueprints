@@ -51,7 +51,8 @@ func main() {
 	gomniauth.WithProviders(github.New("8779ebdf5b25ab55e6d2", "eed0cbf3b35887b7093b8a4e76f207ad5b505697",
 		"http://localhost:9090/auth/callback/github"))
 
-	r := newRoom(UseGravatar)
+	r := newRoom()
+
 	http.Handle("/login", &templateHandler{fpath: "templates", filename: "login.html"})
 	http.HandleFunc("/logout", func(w http.ResponseWriter, r *http.Request) {
 		http.SetCookie(w, &http.Cookie{
